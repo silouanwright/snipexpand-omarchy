@@ -9,6 +9,7 @@ Item {
   property bool available: false
   property bool availabilityKnown: false
   property bool running: false
+  property bool expansionEnabled: true
   property bool configValid: false
   property string version: ""
   property string installedVersion: ""
@@ -27,7 +28,7 @@ Item {
   property string _doctorOutput: ""
 
   readonly property bool busy: actionProcess.running
-  readonly property string minimumVersion: "0.2.5"
+  readonly property string minimumVersion: "0.3.0"
   readonly property bool compatible: available && Model.versionAtLeast(installedVersion, minimumVersion)
   readonly property var filteredSnippets: Model.filterSnippets(snippets, query)
 
@@ -96,6 +97,10 @@ Item {
     runAction(["systemctl", "--user", "restart", "snipexpand.service"], "restart")
   }
 
+  function toggleExpansion() {
+    runAction(["snipexpand", "toggle"], "toggle")
+  }
+
   function openConfig() {
     Quickshell.execDetached(["omarchy-launch-editor", Quickshell.env("HOME") + "/.config/snipexpand"])
   }
@@ -104,12 +109,15 @@ Item {
     if (path) Quickshell.execDetached(["omarchy-launch-editor", String(path)])
   }
 
-  function pasteSnippet(trigger) {
+  function pasteSnippet(trigger, source) {
     if (!compatible) {
       errorText = qsTr("SnipExpand %1 or newer is required").arg(minimumVersion)
       return
     }
-    Quickshell.execDetached(["snipexpand", "paste", String(trigger)])
+    let command = ["snipexpand", "paste"]
+    if (source) command.push("--source", String(source))
+    command.push(String(trigger))
+    Quickshell.execDetached(command)
   }
 
   function runAction(command, kind) {
@@ -149,6 +157,7 @@ Item {
         root._statusOutput = text
         var status = Model.parseStatus(text)
         root.running = status.running === true
+        root.expansionEnabled = status.enabled !== false
         root.version = status.version || ""
         root.backend = status.backend || ""
         root.triggerCount = status.triggers || 0
@@ -199,7 +208,8 @@ Item {
     onExited: function(exitCode) {
       if (exitCode === 0) {
         root.actionSucceeded(root.actionKind)
-        Qt.callLater(root.refresh)
+        if (root.actionKind === "toggle") root.refreshStatus()
+        else Qt.callLater(root.refresh)
       } else {
         root.errorText = root.actionError || qsTr("SnipExpand command failed")
       }

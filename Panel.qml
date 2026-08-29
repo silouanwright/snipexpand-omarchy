@@ -52,7 +52,7 @@ Panel {
   function pasteSnippet(snippet) {
     if (!snippet) return
     root.close()
-    controller.pasteSnippet(snippet.trigger)
+    controller.pasteSnippet(snippet.trigger, snippet.source)
   }
 
   function showDoctor() {
@@ -106,7 +106,7 @@ Panel {
     id: button
     anchors.fill: parent
     bar: root.bar
-    active: controller.running
+    active: controller.running && controller.expansionEnabled
     text: ""
     labelVisible: false
     hasVisualContent: true
@@ -116,7 +116,9 @@ Panel {
       : (!controller.available
         ? qsTr("SnipExpand is not installed")
         : (controller.running
-          ? qsTr("SnipExpand is running with %1 triggers").arg(controller.triggerCount)
+          ? (controller.expansionEnabled
+            ? qsTr("SnipExpand is running with %1 triggers").arg(controller.triggerCount)
+            : qsTr("SnipExpand is paused"))
           : qsTr("SnipExpand is stopped")))
     Accessible.role: Accessible.Button
     Accessible.name: tooltipText
@@ -128,14 +130,14 @@ Panel {
     SnipExpandIcon {
       anchors.centerIn: parent
       size: Style.font.icon
-      color: controller.running ? root.foreground : root.dim
+      color: controller.running && controller.expansionEnabled ? root.foreground : root.dim
     }
   }
 
   Component {
     id: heroIcon
     SnipExpandIcon {
-      color: controller.running ? Color.accent : root.dim
+      color: controller.running && controller.expansionEnabled ? Color.accent : root.dim
       size: Style.font.display
     }
   }
@@ -170,6 +172,7 @@ Panel {
         spacing: Style.space(12)
 
         PanelHero {
+          id: hero
           iconComponent: heroIcon
           title: qsTr("SnipExpand")
           meta: !controller.availabilityKnown
@@ -177,11 +180,24 @@ Panel {
             : (!controller.available
               ? qsTr("Not installed")
               : (controller.running
-                ? qsTr("Running · %1 · %2 triggers").arg(controller.backend || qsTr("active")).arg(controller.triggerCount)
+                ? (controller.expansionEnabled
+                  ? qsTr("Running · %1 · %2 triggers").arg(controller.backend || qsTr("active")).arg(controller.triggerCount)
+                  : qsTr("Paused · %1 triggers").arg(controller.triggerCount))
                 : qsTr("Service stopped")))
           detail: controller.version ? "v" + controller.version : ""
           foreground: root.foreground
           fontFamily: root.fontFamily
+          trailingControl: Component {
+            Button {
+              text: controller.expansionEnabled ? qsTr("Pause") : qsTr("Resume")
+              bordered: true
+              focusable: true
+              enabled: controller.running && !controller.busy
+              foreground: hero.foreground
+              fontFamily: hero.fontFamily
+              onClicked: controller.toggleExpansion()
+            }
+          }
         }
 
         Column {

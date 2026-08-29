@@ -15,6 +15,7 @@ function parseStatus(raw) {
   var value = result.value
   return {
     running: value.running === true,
+    enabled: value.enabled !== false,
     version: String(value.version || ""),
     backend: String(value.injection_backend || ""),
     triggers: Number(value.triggers || 0),
@@ -60,6 +61,9 @@ function filterSnippets(snippets, query) {
     return String(snippet.label || "").toLowerCase().indexOf(needle) !== -1
       || String(snippet.trigger || "").toLowerCase().indexOf(needle) !== -1
       || String(snippet.replacement || "").toLowerCase().indexOf(needle) !== -1
+      || (snippet.search_terms || []).some(function(term) {
+        return String(term).toLowerCase().indexOf(needle) !== -1
+      })
   })
 }
 
