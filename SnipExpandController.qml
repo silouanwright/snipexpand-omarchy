@@ -66,17 +66,23 @@ Item {
     doctorProcess.running = true
   }
 
-  function addSnippet(trigger, replacement) {
+  function addSnippet(trigger, label, replacement) {
     var cleanTrigger = String(trigger || "").trim()
     if (!cleanTrigger) {
       errorText = qsTr("Trigger is required")
       return
     }
-    runAction(["snipexpand", "add", cleanTrigger, String(replacement || "")], "add")
+    runAction([
+      "snipexpand", "add", "--label", String(label || ""),
+      cleanTrigger, String(replacement || "")
+    ], "add")
   }
 
-  function updateSnippet(trigger, replacement) {
-    runAction(["snipexpand", "add", String(trigger), String(replacement || "")], "edit")
+  function updateSnippet(trigger, label, replacement) {
+    runAction([
+      "snipexpand", "add", "--label", String(label || ""),
+      String(trigger), String(replacement || "")
+    ], "edit")
   }
 
   function removeSnippet(trigger) {

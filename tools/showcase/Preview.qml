@@ -1,6 +1,7 @@
 import QtQuick
 import qs.Commons
 import qs.Ui
+import "Project" as Product
 
 BorderSurface {
   id: root
@@ -17,11 +18,9 @@ BorderSurface {
 
   Component {
     id: heroIcon
-    Text {
-      text: "󰗊"
+    Product.SnipExpandIcon {
       color: Color.accent
-      font.family: Style.font.family
-      font.pixelSize: Style.font.display
+      size: Style.font.display
     }
   }
 
@@ -35,7 +34,7 @@ BorderSurface {
       iconComponent: heroIcon
       title: qsTr("SnipExpand")
       meta: qsTr("Running · Wayland · 211 triggers")
-      detail: "v0.2.2"
+      detail: "v0.2.4"
       foreground: root.foreground
       fontFamily: Style.font.family
     }
@@ -70,9 +69,9 @@ BorderSurface {
 
     Repeater {
       model: [
-        { trigger: ";mail", kind: qsTr("GENERATED"), replacement: "hello@example.com", selected: true },
-        { trigger: ";shrug", kind: qsTr("YAML"), replacement: "¯\\_(ツ)_/¯", selected: false },
-        { trigger: ";sig", kind: qsTr("YAML"), replacement: "Best regards, Alex Example", selected: false }
+        { label: qsTr("Email address"), trigger: ";mail", kind: qsTr("GENERATED"), replacement: "hello@example.com", selected: true },
+        { label: qsTr("Shrug"), trigger: ";shrug", kind: qsTr("YAML"), replacement: "¯\\_(ツ)_/¯", selected: false },
+        { label: qsTr("Signature"), trigger: ";sig", kind: qsTr("YAML"), replacement: "Best regards, Alex Example", selected: false }
       ]
 
       delegate: BorderSurface {
@@ -93,7 +92,7 @@ BorderSurface {
           spacing: Style.space(2)
           Row {
             Text {
-              text: modelData.trigger
+              text: modelData.label
               color: root.foreground
               font.family: Style.font.family
               font.pixelSize: Style.font.body
@@ -108,7 +107,7 @@ BorderSurface {
           }
           Text {
             width: parent.width
-            text: modelData.replacement
+            text: modelData.trigger + "  ·  " + modelData.replacement
             color: root.dim
             font.family: Style.font.family
             font.pixelSize: Style.font.caption

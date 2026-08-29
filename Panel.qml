@@ -29,6 +29,7 @@ Panel {
   function startAdd() {
     selectedSnippet = null
     view = "edit"
+    labelField.text = ""
     triggerField.text = ""
     replacementField.text = ""
     Qt.callLater(function() { triggerField.forceActiveFocus() })
@@ -42,6 +43,7 @@ Panel {
     }
     selectedSnippet = snippet
     view = "edit"
+    labelField.text = snippet.label || ""
     triggerField.text = snippet.trigger
     replacementField.text = snippet.replacement
     Qt.callLater(function() { replacementField.forceActiveFocus(); replacementField.selectAll() })
@@ -53,8 +55,8 @@ Panel {
   }
 
   function saveEditor() {
-    if (selectedSnippet) controller.updateSnippet(selectedSnippet.trigger, replacementField.text)
-    else controller.addSnippet(triggerField.text, replacementField.text)
+    if (selectedSnippet) controller.updateSnippet(selectedSnippet.trigger, labelField.text, replacementField.text)
+    else controller.addSnippet(triggerField.text, labelField.text, replacementField.text)
   }
 
   function requestDelete(snippet) {
@@ -99,7 +101,10 @@ Panel {
     anchors.fill: parent
     bar: root.bar
     active: controller.running
-    text: controller.running ? "󰗊" : "󰅙"
+    text: ""
+    labelVisible: false
+    hasVisualContent: true
+    fixedWidth: vertical ? -1 : Style.bar.iconSlot
     tooltipText: !controller.availabilityKnown
       ? qsTr("Checking SnipExpand")
       : (!controller.available
@@ -113,15 +118,19 @@ Panel {
       if (mouseButton === Qt.RightButton) controller.refresh()
       else root.toggle()
     }
+
+    SnipExpandIcon {
+      anchors.centerIn: parent
+      size: Style.font.icon
+      color: controller.running ? root.foreground : root.dim
+    }
   }
 
   Component {
     id: heroIcon
-    Text {
-      text: controller.running ? "󰗊" : "󰅙"
+    SnipExpandIcon {
       color: controller.running ? Color.accent : root.dim
-      font.family: root.fontFamily
-      font.pixelSize: Style.font.display
+      size: Style.font.display
     }
   }
 
@@ -269,7 +278,7 @@ Panel {
               required property var modelData
               required property int index
               width: snippetList.width
-              height: Style.space(50)
+              height: Style.space(54)
               leftAlign: true
               bordered: false
               hasCursor: index === root.selectedIndex
@@ -290,7 +299,7 @@ Panel {
                 Row {
                   width: parent.width
                   Text {
-                    text: modelData.trigger
+                    text: modelData.label || modelData.trigger
                     color: root.foreground
                     font.family: root.fontFamily
                     font.pixelSize: Style.font.body
@@ -305,7 +314,9 @@ Panel {
                 }
                 Text {
                   width: parent.width
-                  text: controller.preview(modelData.replacement)
+                  text: modelData.label
+                    ? modelData.trigger + "  ·  " + controller.preview(modelData.replacement)
+                    : controller.preview(modelData.replacement)
                   color: root.dim
                   font.family: root.fontFamily
                   font.pixelSize: Style.font.caption
@@ -335,6 +346,16 @@ Panel {
             text: root.selectedSnippet ? qsTr("EDIT GENERATED SNIPPET") : qsTr("ADD GENERATED SNIPPET")
             foreground: root.foreground
             fontFamily: root.fontFamily
+          }
+          TextField {
+            id: labelField
+            width: parent.width
+            placeholderText: qsTr("Label, such as Email address")
+            foreground: root.foreground
+            Accessible.name: qsTr("Snippet label")
+            Keys.onReturnPressed: triggerField.enabled
+              ? triggerField.forceActiveFocus()
+              : replacementField.forceActiveFocus()
           }
           TextField {
             id: triggerField

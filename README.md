@@ -23,7 +23,7 @@ qmlpack verify
 node test_model.js
 omarchy plugin validate .
 vendor/qmlpack/oma-showcase/bin/oma-showcase \
-  --project . --preview tools/showcase/Preview.qml \
+  --project "$PWD" --preview tools/showcase/Preview.qml \
   --output docs/assets/themes.png
 ```
 

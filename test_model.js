@@ -14,10 +14,11 @@ const status = model.parseStatus('{"running":true,"version":"1.2.3","injection_b
 console.assert(status.running && status.backend === "wayland" && status.triggers === 4)
 
 const snippets = [
-  { trigger: ";mail", replacement: "hello@example.com" },
+  { trigger: ";mail", label: "Email address", replacement: "hello@example.com" },
   { trigger: ";sig", replacement: "Best regards" }
 ]
 console.assert(model.filterSnippets(snippets, "MAIL").length === 1)
+console.assert(model.filterSnippets(snippets, "address")[0].trigger === ";mail")
 console.assert(model.filterSnippets(snippets, "regards")[0].trigger === ";sig")
 console.assert(model.preview("first\nsecond", 20) === "first second")
 console.log("Model checks passed")

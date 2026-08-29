@@ -42,7 +42,8 @@ function filterSnippets(snippets, query) {
   var needle = String(query || "").trim().toLowerCase()
   if (!needle) return snippets.slice()
   return snippets.filter(function(snippet) {
-    return String(snippet.trigger || "").toLowerCase().indexOf(needle) !== -1
+    return String(snippet.label || "").toLowerCase().indexOf(needle) !== -1
+      || String(snippet.trigger || "").toLowerCase().indexOf(needle) !== -1
       || String(snippet.replacement || "").toLowerCase().indexOf(needle) !== -1
   })
 }
