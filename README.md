@@ -12,7 +12,7 @@ read-only and opens in your configured editor.
 omarchy plugin add https://github.com/silouanwright/snipexpand-omarchy --enable
 ```
 
-SnipExpand 0.2.5 or newer must already be installed and available as
+SnipExpand 0.3.0 or newer must already be installed and available as
 `snipexpand`.
 
 ## Development
