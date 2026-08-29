@@ -12,6 +12,11 @@ vm.runInNewContext(source, model)
 
 const status = model.parseStatus('{"running":true,"version":"1.2.3","injection_backend":"wayland","triggers":4,"files":2,"config_valid":true}')
 console.assert(status.running && status.backend === "wayland" && status.triggers === 4)
+console.assert(model.parseCliVersion("snipexpand 0.2.5") === "0.2.5")
+console.assert(model.versionAtLeast("0.2.5", "0.2.5"))
+console.assert(model.versionAtLeast("0.3.0", "0.2.5"))
+console.assert(!model.versionAtLeast("0.2.4", "0.2.5"))
+console.assert(!model.versionAtLeast("unknown", "0.2.5"))
 
 const snippets = [
   { trigger: ";mail", label: "Email address", replacement: "hello@example.com" },

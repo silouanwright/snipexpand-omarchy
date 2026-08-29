@@ -24,6 +24,21 @@ function parseStatus(raw) {
   }
 }
 
+function parseCliVersion(raw) {
+  var match = String(raw || "").match(/(\d+)\.(\d+)\.(\d+)/)
+  return match ? match[1] + "." + match[2] + "." + match[3] : ""
+}
+
+function versionAtLeast(version, minimum) {
+  var current = parseCliVersion(version).split(".").map(Number)
+  var required = parseCliVersion(minimum).split(".").map(Number)
+  if (current.length !== 3 || required.length !== 3) return false
+  for (var index = 0; index < 3; index++) {
+    if (current[index] !== required[index]) return current[index] > required[index]
+  }
+  return true
+}
+
 function parseSnippets(raw) {
   var result = parseJson(raw, [], "snippets")
   if (result.error || !(result.value instanceof Array))

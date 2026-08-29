@@ -11,6 +11,7 @@ Item {
   property bool running: false
   property bool configValid: false
   property string version: ""
+  property string installedVersion: ""
   property string backend: ""
   property int triggerCount: 0
   property int fileCount: 0
@@ -26,6 +27,8 @@ Item {
   property string _doctorOutput: ""
 
   readonly property bool busy: actionProcess.running
+  readonly property string minimumVersion: "0.2.5"
+  readonly property bool compatible: available && Model.versionAtLeast(installedVersion, minimumVersion)
   readonly property var filteredSnippets: Model.filterSnippets(snippets, query)
 
   signal actionSucceeded(string kind)
@@ -102,6 +105,10 @@ Item {
   }
 
   function pasteSnippet(trigger) {
+    if (!compatible) {
+      errorText = qsTr("SnipExpand %1 or newer is required").arg(minimumVersion)
+      return
+    }
     Quickshell.execDetached(["snipexpand", "paste", String(trigger)])
   }
 
@@ -116,12 +123,17 @@ Item {
 
   Process {
     id: availabilityProcess
-    command: ["bash", "-c", "command -v snipexpand >/dev/null 2>&1"]
+    command: ["bash", "-c", "command -v snipexpand >/dev/null 2>&1 && snipexpand --version"]
+    stdout: StdioCollector {
+      waitForEnd: true
+      onStreamFinished: root.installedVersion = Model.parseCliVersion(text)
+    }
     onExited: function(exitCode) {
       root.availabilityKnown = true
       root.available = exitCode === 0
       if (root.available) root.refreshStatus()
       else {
+        root.installedVersion = ""
         root.running = false
         root.snippets = []
       }

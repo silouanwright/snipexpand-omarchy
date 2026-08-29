@@ -208,7 +208,32 @@ Panel {
         }
 
         Column {
-          visible: controller.available && root.view === "list"
+          visible: controller.available && !controller.compatible
+          width: parent.width
+          spacing: Style.space(8)
+
+          Text {
+            width: parent.width
+            text: qsTr("SnipExpand %1 or newer is required. Installed: %2")
+              .arg(controller.minimumVersion)
+              .arg(controller.installedVersion || qsTr("unknown"))
+            color: Color.urgent
+            font.family: root.fontFamily
+            font.pixelSize: Style.font.body
+            wrapMode: Text.WordWrap
+          }
+          Button {
+            text: qsTr("Update SnipExpand")
+            bordered: true
+            focusable: true
+            foreground: root.foreground
+            fontFamily: root.fontFamily
+            onClicked: Qt.openUrlExternally("https://github.com/silouanwright/snipexpand/releases")
+          }
+        }
+
+        Column {
+          visible: controller.compatible && root.view === "list"
           width: parent.width
           spacing: Style.space(9)
 
@@ -358,7 +383,7 @@ Panel {
         }
 
         Column {
-          visible: controller.available && root.editing
+          visible: controller.compatible && root.editing
           width: parent.width
           spacing: Style.space(9)
 
@@ -435,7 +460,7 @@ Panel {
         }
 
         Column {
-          visible: controller.available && root.diagnosing
+          visible: controller.compatible && root.diagnosing
           width: parent.width
           spacing: Style.space(8)
 
