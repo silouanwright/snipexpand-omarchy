@@ -289,7 +289,7 @@ Panel {
               required property var modelData
               required property int index
               width: snippetList.width
-              height: Style.space(54)
+              height: Style.space(68)
               leftAlign: true
               bordered: false
               hasCursor: index === root.selectedIndex
@@ -307,57 +307,30 @@ Panel {
                 anchors.verticalCenter: parent.verticalCenter
                 spacing: Style.space(2)
 
-                Row {
+                Text {
                   width: parent.width
-                  Text {
-                    text: modelData.label || modelData.trigger
-                    color: root.foreground
-                    font.family: root.fontFamily
-                    font.pixelSize: Style.font.body
-                    font.bold: true
-                  }
-                  Text {
-                    text: modelData.editable ? qsTr("  GENERATED") : qsTr("  YAML")
-                    color: modelData.editable ? Color.accent : root.dim
-                    font.family: root.fontFamily
-                    font.pixelSize: Style.font.caption
-                  }
+                  text: modelData.label || modelData.trigger
+                  color: root.foreground
+                  font.family: root.fontFamily
+                  font.pixelSize: Style.font.body
+                  font.bold: true
+                  elide: Text.ElideRight
                 }
-                Row {
+                Text {
                   width: parent.width
-                  spacing: Style.space(8)
-
-                  Text {
-                    width: Math.min(implicitWidth, parent.width - triggerBadge.width - parent.spacing)
-                    text: controller.preview(modelData.replacement)
-                    color: root.dim
-                    font.family: root.fontFamily
-                    font.pixelSize: Style.font.caption
-                    elide: Text.ElideRight
-                  }
-
-                  Rectangle {
-                    id: triggerBadge
-                    width: Math.min(triggerText.implicitWidth + Style.space(14), Style.space(130))
-                    height: Style.space(20)
-                    color: "transparent"
-                    border.width: Style.spacing.hairline
-                    border.color: root.dim
-                    radius: Style.cornerRadius > 0 ? height / 2 : 0
-
-                    Text {
-                      id: triggerText
-                      anchors.fill: parent
-                      anchors.leftMargin: Style.space(7)
-                      anchors.rightMargin: Style.space(7)
-                      text: qsTr("Trigger %1").arg(modelData.trigger)
-                      color: root.dim
-                      font.family: root.fontFamily
-                      font.pixelSize: Style.font.caption
-                      verticalAlignment: Text.AlignVCenter
-                      elide: Text.ElideRight
-                    }
-                  }
+                  text: qsTr("Expansion  %1").arg(controller.preview(modelData.replacement))
+                  color: root.dim
+                  font.family: root.fontFamily
+                  font.pixelSize: Style.font.caption
+                  elide: Text.ElideRight
+                }
+                Text {
+                  width: parent.width
+                  text: qsTr("Trigger  %1").arg(modelData.trigger)
+                  color: Color.accent
+                  font.family: root.fontFamily
+                  font.pixelSize: Style.font.caption
+                  elide: Text.ElideRight
                 }
               }
             }
