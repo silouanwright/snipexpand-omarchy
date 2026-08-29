@@ -49,6 +49,12 @@ Panel {
     Qt.callLater(function() { replacementField.forceActiveFocus(); replacementField.selectAll() })
   }
 
+  function pasteSnippet(snippet) {
+    if (!snippet) return
+    root.close()
+    controller.pasteSnippet(snippet.trigger)
+  }
+
   function showDoctor() {
     view = "doctor"
     controller.diagnose()
@@ -219,7 +225,12 @@ Panel {
             }
             Keys.onDownPressed: root.moveSelection(1)
             Keys.onUpPressed: root.moveSelection(-1)
-            Keys.onReturnPressed: if (root.visibleSnippets.length) root.startEdit(root.visibleSnippets[root.selectedIndex])
+            Keys.onReturnPressed: function(event) {
+              if (!root.visibleSnippets.length) return
+              var snippet = root.visibleSnippets[root.selectedIndex]
+              if (event.modifiers & Qt.ControlModifier) root.startEdit(snippet)
+              else root.pasteSnippet(snippet)
+            }
           }
 
           Row {
@@ -286,7 +297,7 @@ Panel {
               fontFamily: root.fontFamily
               Accessible.name: qsTr("%1 expands to %2").arg(modelData.trigger).arg(controller.preview(modelData.replacement))
               onHovered: function(isHovered) { if (isHovered) root.selectedIndex = index }
-              onClicked: root.startEdit(modelData)
+              onClicked: root.pasteSnippet(modelData)
 
               Column {
                 anchors.left: parent.left
@@ -314,9 +325,7 @@ Panel {
                 }
                 Text {
                   width: parent.width
-                  text: modelData.label
-                    ? modelData.trigger + "  ·  " + controller.preview(modelData.replacement)
-                    : controller.preview(modelData.replacement)
+                  text: modelData.trigger + "  ·  " + controller.preview(modelData.replacement)
                   color: root.dim
                   font.family: root.fontFamily
                   font.pixelSize: Style.font.caption
@@ -333,6 +342,16 @@ Panel {
             color: root.dim
             font.family: root.fontFamily
             font.pixelSize: Style.font.body
+            horizontalAlignment: Text.AlignHCenter
+          }
+
+          Text {
+            visible: root.visibleSnippets.length > 0
+            width: parent.width
+            text: qsTr("Enter inserts · Ctrl+Enter edits")
+            color: root.dim
+            font.family: root.fontFamily
+            font.pixelSize: Style.font.caption
             horizontalAlignment: Text.AlignHCenter
           }
         }

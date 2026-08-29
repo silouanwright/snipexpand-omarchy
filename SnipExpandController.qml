@@ -101,6 +101,10 @@ Item {
     if (path) Quickshell.execDetached(["omarchy-launch-editor", String(path)])
   }
 
+  function pasteSnippet(trigger) {
+    Quickshell.execDetached(["snipexpand", "paste", String(trigger)])
+  }
+
   function runAction(command, kind) {
     if (busy) return
     actionKind = kind
