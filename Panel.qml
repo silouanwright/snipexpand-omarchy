@@ -318,7 +318,7 @@ Panel {
                 }
                 Text {
                   width: parent.width
-                  text: qsTr("Expansion  %1").arg(controller.preview(modelData.replacement))
+                  text: qsTr("Expansion: %1").arg(controller.preview(modelData.replacement))
                   color: root.dim
                   font.family: root.fontFamily
                   font.pixelSize: Style.font.caption
@@ -326,7 +326,7 @@ Panel {
                 }
                 Text {
                   width: parent.width
-                  text: qsTr("Trigger  %1").arg(modelData.trigger)
+                  text: qsTr("Trigger: %1").arg(modelData.trigger)
                   color: Color.accent
                   font.family: root.fontFamily
                   font.pixelSize: Style.font.caption
