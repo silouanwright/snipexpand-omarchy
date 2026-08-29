@@ -323,13 +323,40 @@ Panel {
                     font.pixelSize: Style.font.caption
                   }
                 }
-                Text {
+                RowLayout {
                   width: parent.width
-                  text: controller.preview(modelData.replacement) + "  ·  " + modelData.trigger
-                  color: root.dim
-                  font.family: root.fontFamily
-                  font.pixelSize: Style.font.caption
-                  elide: Text.ElideRight
+                  spacing: Style.space(8)
+
+                  Text {
+                    Layout.fillWidth: true
+                    text: controller.preview(modelData.replacement)
+                    color: root.dim
+                    font.family: root.fontFamily
+                    font.pixelSize: Style.font.caption
+                    elide: Text.ElideRight
+                  }
+
+                  Rectangle {
+                    Layout.preferredWidth: Math.min(triggerText.implicitWidth + Style.space(14), Style.space(130))
+                    Layout.preferredHeight: Style.space(20)
+                    color: "transparent"
+                    border.width: Style.spacing.hairline
+                    border.color: root.dim
+                    radius: Style.cornerRadius > 0 ? height / 2 : 0
+
+                    Text {
+                      id: triggerText
+                      anchors.fill: parent
+                      anchors.leftMargin: Style.space(7)
+                      anchors.rightMargin: Style.space(7)
+                      text: qsTr("Trigger %1").arg(modelData.trigger)
+                      color: root.dim
+                      font.family: root.fontFamily
+                      font.pixelSize: Style.font.caption
+                      verticalAlignment: Text.AlignVCenter
+                      elide: Text.ElideRight
+                    }
+                  }
                 }
               }
             }
