@@ -323,12 +323,12 @@ Panel {
                     font.pixelSize: Style.font.caption
                   }
                 }
-                RowLayout {
+                Row {
                   width: parent.width
                   spacing: Style.space(8)
 
                   Text {
-                    Layout.fillWidth: true
+                    width: Math.min(implicitWidth, parent.width - triggerBadge.width - parent.spacing)
                     text: controller.preview(modelData.replacement)
                     color: root.dim
                     font.family: root.fontFamily
@@ -337,8 +337,9 @@ Panel {
                   }
 
                   Rectangle {
-                    Layout.preferredWidth: Math.min(triggerText.implicitWidth + Style.space(14), Style.space(130))
-                    Layout.preferredHeight: Style.space(20)
+                    id: triggerBadge
+                    width: Math.min(triggerText.implicitWidth + Style.space(14), Style.space(130))
+                    height: Style.space(20)
                     color: "transparent"
                     border.width: Style.spacing.hairline
                     border.color: root.dim
