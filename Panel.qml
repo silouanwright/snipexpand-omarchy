@@ -325,7 +325,7 @@ Panel {
                 }
                 Text {
                   width: parent.width
-                  text: modelData.trigger + "  ·  " + controller.preview(modelData.replacement)
+                  text: controller.preview(modelData.replacement) + "  ·  " + modelData.trigger
                   color: root.dim
                   font.family: root.fontFamily
                   font.pixelSize: Style.font.caption
