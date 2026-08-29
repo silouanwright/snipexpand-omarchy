@@ -433,6 +433,15 @@ Panel {
                   font.pixelSize: Style.font.caption
                   wrapMode: Text.WordWrap
                 }
+                Text {
+                  visible: !!modelData.fix
+                  width: parent.width
+                  text: modelData.fix || ""
+                  color: Color.accent
+                  font.family: root.fontFamily
+                  font.pixelSize: Style.font.caption
+                  wrapMode: Text.WordWrap
+                }
               }
             }
           }

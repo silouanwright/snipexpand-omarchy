@@ -22,6 +22,9 @@ Dependencies are vendored reproducibly with [QMLPack](https://github.com/silouan
 qmlpack verify
 node test_model.js
 omarchy plugin validate .
+vendor/qmlpack/oma-showcase/bin/oma-showcase \
+  --project . --preview tools/showcase/Preview.qml \
+  --output docs/assets/themes.png
 ```
 
 ## License

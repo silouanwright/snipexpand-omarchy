@@ -5,7 +5,7 @@ function parseJson(raw, fallback, label) {
     var value = JSON.parse(String(raw || ""))
     return { value: value, error: "" }
   } catch (error) {
-    return { value: fallback, error: "Could not read " + label }
+    return { value: fallback, error: qsTr("Could not read %1").arg(label) }
   }
 }
 
@@ -27,14 +27,14 @@ function parseStatus(raw) {
 function parseSnippets(raw) {
   var result = parseJson(raw, [], "snippets")
   if (result.error || !(result.value instanceof Array))
-    return { snippets: [], error: result.error || "Could not read snippets" }
+    return { snippets: [], error: result.error || qsTr("Could not read snippets") }
   return { snippets: result.value, error: "" }
 }
 
 function parseDoctor(raw) {
   var result = parseJson(raw, {}, "diagnostics")
   if (result.error || !(result.value.checks instanceof Array))
-    return { ok: false, checks: [], error: result.error || "Could not read diagnostics" }
+    return { ok: false, checks: [], error: result.error || qsTr("Could not read diagnostics") }
   return { ok: result.value.ok === true, checks: result.value.checks, error: "" }
 }
 

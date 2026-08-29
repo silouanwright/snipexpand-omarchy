@@ -40,12 +40,15 @@ Item {
     if (!availabilityProcess.running) availabilityProcess.running = true
   }
 
+  function refreshStatus() {
+    if (!available || statusProcess.running) return
+    _statusOutput = ""
+    statusProcess.running = true
+  }
+
   function refresh() {
     if (!available) return
-    if (!statusProcess.running) {
-      _statusOutput = ""
-      statusProcess.running = true
-    }
+    refreshStatus()
     if (!listProcess.running) {
       _listOutput = ""
       listProcess.running = true
@@ -107,7 +110,7 @@ Item {
     onExited: function(exitCode) {
       root.availabilityKnown = true
       root.available = exitCode === 0
-      if (root.available) root.refresh()
+      if (root.available) root.refreshStatus()
       else {
         root.running = false
         root.snippets = []

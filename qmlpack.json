@@ -2,7 +2,6 @@
   "schemaVersion": 1,
   "profile": "omarchy",
   "dependencies": {
-    "oma-command-layer": "github:silouanwright/omatools/packages/oma-command-layer@0.2.4",
     "oma-showcase": "github:silouanwright/omatools/packages/oma-showcase@0.1.0"
   }
 }

@@ -2,7 +2,12 @@ const fs = require("fs")
 const vm = require("vm")
 
 const source = fs.readFileSync("Model.js", "utf8").replace(/^\.pragma library\s*/, "")
-const model = {}
+const model = {
+  qsTr: value => ({
+    arg: replacement => String(value).replace("%1", replacement),
+    toString: () => value
+  })
+}
 vm.runInNewContext(source, model)
 
 const status = model.parseStatus('{"running":true,"version":"1.2.3","injection_backend":"wayland","triggers":4,"files":2,"config_valid":true}')
