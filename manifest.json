@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "id": "io.github.silouanwright.snipexpand",
+  "name": "SnipExpand",
+  "version": "0.1.0",
+  "author": "Silouan Wright",
+  "license": "GPL-3.0-or-later",
+  "homepage": "https://github.com/silouanwright/snipexpand-omarchy",
+  "repository": "https://github.com/silouanwright/snipexpand-omarchy",
+  "description": "Search, manage, and diagnose SnipExpand from the Omarchy bar.",
+  "kinds": ["bar-widget"],
+  "entryPoints": {
+    "barWidget": "Panel.qml"
+  },
+  "barWidget": {
+    "displayName": "SnipExpand",
+    "description": "Daemon status, searchable snippets, generated-snippet editing, and diagnostics.",
+    "category": "Productivity",
+    "aliases": ["snippets", "text expansion", "text expander"],
+    "allowMultiple": false,
+    "defaultSection": "right"
+  }
+}
