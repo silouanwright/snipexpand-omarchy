@@ -47,6 +47,13 @@ function parseSnippets(raw) {
   return { snippets: result.value, error: "" }
 }
 
+function parsePacks(raw) {
+  var result = parseJson(raw, [], "snippet packs")
+  if (result.error || !(result.value instanceof Array))
+    return { packs: [], error: result.error || qsTr("Could not read snippet packs") }
+  return { packs: result.value, error: "" }
+}
+
 function parseDoctor(raw) {
   var result = parseJson(raw, {}, "diagnostics")
   if (result.error || !(result.value.checks instanceof Array))

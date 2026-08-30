@@ -17,6 +17,7 @@ Item {
   property int triggerCount: 0
   property int fileCount: 0
   property var snippets: []
+  property var packs: []
   property var doctorChecks: []
   property bool doctorOk: false
   property string query: ""
@@ -26,9 +27,10 @@ Item {
   property string _statusOutput: ""
   property string _listOutput: ""
   property string _doctorOutput: ""
+  property string _packOutput: ""
 
   readonly property bool busy: actionProcess.running
-  readonly property string minimumVersion: "0.3.0"
+  readonly property string minimumVersion: "0.4.0"
   readonly property bool compatible: available && Model.versionAtLeast(installedVersion, minimumVersion)
   readonly property var filteredSnippets: Model.filterSnippets(snippets, query)
 
@@ -62,6 +64,7 @@ Item {
   function clearPrivateData() {
     query = ""
     snippets = []
+    packs = []
   }
 
   function diagnose() {
@@ -100,6 +103,26 @@ Item {
   function toggleExpansion() {
     runAction(["snipexpand", "toggle"], "toggle")
   }
+
+  function refreshPacks() {
+    if (!available || packListProcess.running) return
+    _packOutput = ""
+    packListProcess.running = true
+  }
+
+  function installPack(source) {
+    const value = String(source || "").trim()
+    if (!value) {
+      errorText = qsTr("Pack source is required")
+      return
+    }
+    runAction(["snipexpand", "pack", "install", value], "pack")
+  }
+
+  function updatePack(name) { runAction(["snipexpand", "pack", "update", String(name)], "pack") }
+  function enablePack(name) { runAction(["snipexpand", "pack", "enable", String(name)], "pack") }
+  function disablePack(name) { runAction(["snipexpand", "pack", "disable", String(name)], "pack") }
+  function removePack(name) { runAction(["snipexpand", "pack", "remove", String(name)], "pack") }
 
   function openConfig() {
     Quickshell.execDetached(["omarchy-launch-editor", Quickshell.env("HOME") + "/.config/snipexpand"])
@@ -204,11 +227,32 @@ Item {
   }
 
   Process {
+    id: packListProcess
+    command: ["snipexpand", "pack", "list", "--json"]
+    stdout: StdioCollector {
+      waitForEnd: true
+      onStreamFinished: {
+        root._packOutput = text
+        var result = Model.parsePacks(text)
+        root.packs = result.packs
+        if (result.error) root.errorText = result.error
+      }
+    }
+    onExited: function(exitCode) {
+      if (exitCode !== 0 && root._packOutput === "") root.errorText = qsTr("Could not load snippet packs")
+    }
+  }
+
+  Process {
     id: actionProcess
     onExited: function(exitCode) {
       if (exitCode === 0) {
         root.actionSucceeded(root.actionKind)
         if (root.actionKind === "toggle") root.refreshStatus()
+        else if (root.actionKind === "pack") {
+          root.refreshPacks()
+          Qt.callLater(root.refresh)
+        }
         else Qt.callLater(root.refresh)
       } else {
         root.errorText = root.actionError || qsTr("SnipExpand command failed")

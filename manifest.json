@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "io.github.silouanwright.snipexpand",
   "name": "SnipExpand",
-  "version": "0.3.1",
+  "version": "0.4.0",
   "author": "Silouan Wright",
   "license": "GPL-3.0-or-later",
   "homepage": "https://github.com/silouanwright/snipexpand-omarchy",
@@ -14,7 +14,7 @@
   },
   "barWidget": {
     "displayName": "SnipExpand",
-    "description": "Daemon status, searchable snippets, generated-snippet editing, and diagnostics.",
+    "description": "Daemon status, searchable snippets, snippet packs, editing, and diagnostics.",
     "category": "Productivity",
     "aliases": ["snippets", "text expansion", "text expander"],
     "allowMultiple": false,

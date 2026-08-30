@@ -10,6 +10,7 @@ Panel {
   property string view: "list"
   property var selectedSnippet: null
   property string pendingDeleteTrigger: ""
+  property string pendingRemovePack: ""
   property int selectedIndex: 0
 
   readonly property color foreground: bar ? bar.barForeground : Color.foreground
@@ -18,6 +19,7 @@ Panel {
   readonly property var visibleSnippets: controller.filteredSnippets
   readonly property bool editing: view === "edit"
   readonly property bool diagnosing: view === "doctor"
+  readonly property bool managingPacks: view === "packs"
 
   function showList() {
     view = "list"
@@ -60,6 +62,12 @@ Panel {
     controller.diagnose()
   }
 
+  function showPacks() {
+    view = "packs"
+    controller.refreshPacks()
+    Qt.callLater(function() { packSourceField.forceActiveFocus() })
+  }
+
   function saveEditor() {
     if (selectedSnippet) controller.updateSnippet(selectedSnippet.trigger, labelField.text, replacementField.text)
     else controller.addSnippet(triggerField.text, labelField.text, replacementField.text)
@@ -70,6 +78,12 @@ Panel {
     pendingDeleteTrigger = snippet.trigger
     deleteDialog.selectedIndex = 0
     deleteDialog.opened = true
+  }
+
+  function requestRemovePack(name) {
+    pendingRemovePack = name
+    packRemoveDialog.selectedIndex = 0
+    packRemoveDialog.opened = true
   }
 
   function moveSelection(delta) {
@@ -99,6 +113,7 @@ Panel {
     onActionSucceeded: function(kind) {
       if (kind === "add" || kind === "edit") root.showList()
       if (kind === "remove") root.pendingDeleteTrigger = ""
+      if (kind === "pack") packSourceField.text = ""
     }
   }
 
@@ -159,8 +174,12 @@ Panel {
           event.accepted = true
           return
         }
+        if (packRemoveDialog.opened && packRemoveDialog.handleKey(event)) {
+          event.accepted = true
+          return
+        }
         if (event.key === Qt.Key_Escape) {
-          if (root.editing || root.diagnosing) root.showList()
+          if (root.editing || root.diagnosing || root.managingPacks) root.showList()
           else root.close()
           event.accepted = true
         }
@@ -295,14 +314,13 @@ Panel {
               onClicked: root.showDoctor()
             }
             Button {
-              text: controller.busy && controller.actionKind === "restart" ? qsTr("Restarting…") : qsTr("Restart")
-              iconText: "󰑓"
+              text: qsTr("Packs")
+              iconText: "󰏗"
               bordered: true
               focusable: true
-              enabled: !controller.busy
               foreground: root.foreground
               fontFamily: root.fontFamily
-              onClicked: controller.restart()
+              onClicked: root.showPacks()
             }
           }
 
@@ -394,6 +412,137 @@ Panel {
             font.family: root.fontFamily
             font.pixelSize: Style.font.caption
             horizontalAlignment: Text.AlignHCenter
+          }
+        }
+
+        Column {
+          visible: controller.compatible && root.managingPacks
+          width: parent.width
+          spacing: Style.space(9)
+
+          PanelSectionHeader {
+            text: qsTr("SNIPPET PACKS")
+            foreground: root.foreground
+            fontFamily: root.fontFamily
+          }
+          Row {
+            width: parent.width
+            spacing: Style.space(6)
+            TextField {
+              id: packSourceField
+              width: parent.width - installPackButton.width - parent.spacing
+              placeholderText: qsTr("espanso:arrows or Git URL")
+              foreground: root.foreground
+              Accessible.name: qsTr("Pack source")
+              Keys.onReturnPressed: controller.installPack(text)
+            }
+            Button {
+              id: installPackButton
+              text: controller.busy ? qsTr("Working…") : qsTr("Install")
+              bordered: true
+              active: true
+              focusable: true
+              enabled: !controller.busy
+              foreground: root.foreground
+              fontFamily: root.fontFamily
+              onClicked: controller.installPack(packSourceField.text)
+            }
+          }
+          ListView {
+            width: parent.width
+            height: Math.min(contentHeight, Style.space(330))
+            clip: true
+            spacing: Style.space(6)
+            model: controller.packs
+
+            delegate: Rectangle {
+              required property var modelData
+              width: ListView.view.width
+              height: Style.space(92)
+              radius: Style.cornerRadius
+              color: Qt.rgba(root.foreground.r, root.foreground.g, root.foreground.b, 0.05)
+              border.color: Qt.rgba(root.foreground.r, root.foreground.g, root.foreground.b, 0.18)
+
+              Column {
+                anchors.fill: parent
+                anchors.margins: Style.space(9)
+                spacing: Style.space(4)
+                Text {
+                  width: parent.width
+                  text: modelData.title + "  " + modelData.version
+                  color: root.foreground
+                  font.family: root.fontFamily
+                  font.pixelSize: Style.font.body
+                  font.bold: true
+                  elide: Text.ElideRight
+                }
+                Text {
+                  width: parent.width
+                  text: modelData.enabled ? qsTr("Enabled") : qsTr("Disabled")
+                  color: modelData.enabled ? Color.accent : root.dim
+                  font.family: root.fontFamily
+                  font.pixelSize: Style.font.caption
+                }
+                Row {
+                  spacing: Style.space(5)
+                  Button {
+                    text: modelData.enabled ? qsTr("Disable") : qsTr("Enable")
+                    bordered: true
+                    focusable: true
+                    enabled: !controller.busy
+                    foreground: root.foreground
+                    fontFamily: root.fontFamily
+                    onClicked: modelData.enabled
+                      ? controller.disablePack(modelData.name)
+                      : controller.enablePack(modelData.name)
+                  }
+                  Button {
+                    text: qsTr("Update")
+                    bordered: true
+                    focusable: true
+                    enabled: !controller.busy
+                    foreground: root.foreground
+                    fontFamily: root.fontFamily
+                    onClicked: controller.updatePack(modelData.name)
+                  }
+                  Button {
+                    text: qsTr("Remove")
+                    bordered: true
+                    focusable: true
+                    enabled: !controller.busy
+                    foreground: Color.urgent
+                    fontFamily: root.fontFamily
+                    onClicked: root.requestRemovePack(modelData.name)
+                  }
+                }
+              }
+            }
+          }
+          Text {
+            visible: controller.packs.length === 0
+            width: parent.width
+            text: qsTr("No snippet packs installed")
+            color: root.dim
+            font.family: root.fontFamily
+            font.pixelSize: Style.font.body
+            horizontalAlignment: Text.AlignHCenter
+          }
+          Text {
+            visible: controller.errorText !== ""
+            width: parent.width
+            text: controller.errorText
+            color: Color.urgent
+            font.family: root.fontFamily
+            font.pixelSize: Style.font.caption
+            wrapMode: Text.WordWrap
+          }
+          Button {
+            text: qsTr("Back")
+            bordered: true
+            focusable: true
+            foreground: root.foreground
+            fontFamily: root.fontFamily
+            onClicked: root.showList()
           }
         }
 
@@ -553,6 +702,15 @@ Panel {
               onClicked: controller.openConfig()
             }
           }
+          Button {
+            text: controller.busy && controller.actionKind === "restart" ? qsTr("Restarting…") : qsTr("Restart service")
+            bordered: true
+            focusable: true
+            enabled: !controller.busy
+            foreground: root.foreground
+            fontFamily: root.fontFamily
+            onClicked: controller.restart()
+          }
         }
       }
 
@@ -572,6 +730,25 @@ Panel {
           opened = false
           controller.removeSnippet(root.pendingDeleteTrigger)
           root.showList()
+        }
+      }
+
+      ConfirmDialog {
+        id: packRemoveDialog
+        anchors.fill: parent
+        message: qsTr("Remove pack %1?").arg(root.pendingRemovePack)
+        cancelText: qsTr("Cancel")
+        confirmText: qsTr("Remove")
+        foreground: root.foreground
+        fontFamily: root.fontFamily
+        onCanceled: {
+          opened = false
+          root.pendingRemovePack = ""
+        }
+        onConfirmed: {
+          opened = false
+          controller.removePack(root.pendingRemovePack)
+          root.pendingRemovePack = ""
         }
       }
     }

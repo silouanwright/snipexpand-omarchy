@@ -2,9 +2,9 @@
 
 A native Omarchy bar panel for [SnipExpand](https://github.com/silouanwright/snipexpand).
 
-Search configured snippets, add or edit generated snippets, restart the service,
-and run setup diagnostics without leaving the bar. Handwritten YAML remains
-read-only and opens in your configured editor.
+Search configured snippets, add or edit generated snippets, manage snippet
+packs, restart the service, and run setup diagnostics without leaving the bar.
+Handwritten YAML remains read-only and opens in your configured editor.
 
 ## Install
 
@@ -12,7 +12,7 @@ read-only and opens in your configured editor.
 omarchy plugin add https://github.com/silouanwright/snipexpand-omarchy --enable
 ```
 
-SnipExpand 0.3.0 or newer must already be installed and available as
+SnipExpand 0.4.0 or newer must already be installed and available as
 `snipexpand`.
 
 ## Development
