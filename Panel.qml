@@ -184,7 +184,6 @@ Panel {
                   ? qsTr("Running · %1 · %2 triggers").arg(controller.backend || qsTr("active")).arg(controller.triggerCount)
                   : qsTr("Paused · %1 triggers").arg(controller.triggerCount))
                 : qsTr("Service stopped")))
-          detail: controller.version ? "v" + controller.version : ""
           foreground: root.foreground
           fontFamily: root.fontFamily
           trailingControl: Component {
