@@ -711,6 +711,16 @@ Panel {
             fontFamily: root.fontFamily
             onClicked: controller.restart()
           }
+          Text {
+            visible: controller.errorText !== "" || controller.actionMessage !== ""
+            width: parent.width
+            text: controller.errorText || controller.actionMessage
+            textFormat: Text.PlainText
+            color: controller.errorText ? Color.urgent : root.foreground
+            font.family: root.fontFamily
+            font.pixelSize: Style.font.caption
+            wrapMode: Text.WordWrap
+          }
         }
       }
 

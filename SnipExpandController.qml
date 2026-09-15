@@ -24,6 +24,7 @@ Item {
   property string errorText: ""
   property string actionKind: ""
   property string actionError: ""
+  property string actionMessage: ""
   property string _statusOutput: ""
   property string _listOutput: ""
   property string _doctorOutput: ""
@@ -148,6 +149,7 @@ Item {
     actionKind = kind
     actionError = ""
     errorText = ""
+    actionMessage = ""
     actionProcess.command = command
     actionProcess.running = true
   }
@@ -248,7 +250,11 @@ Item {
     onExited: function(exitCode) {
       if (exitCode === 0) {
         root.actionSucceeded(root.actionKind)
-        if (root.actionKind === "toggle") root.refreshStatus()
+        if (root.actionKind === "restart") {
+          root.actionMessage = qsTr("Service restarted")
+          restartRefreshTimer.restart()
+        }
+        else if (root.actionKind === "toggle") root.refreshStatus()
         else if (root.actionKind === "pack") {
           root.refreshPacks()
           Qt.callLater(root.refresh)
@@ -260,6 +266,15 @@ Item {
     }
     stdout: StdioCollector { waitForEnd: true }
     stderr: StdioCollector { waitForEnd: true; onStreamFinished: root.actionError = String(text || "").trim() }
+  }
+
+  Timer {
+    id: restartRefreshTimer
+    interval: 500
+    onTriggered: {
+      root.refresh()
+      root.diagnose()
+    }
   }
 
   Timer {

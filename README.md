@@ -15,6 +15,13 @@ omarchy plugin add https://github.com/silouanwright/snipexpand-omarchy --enable
 SnipExpand 0.4.0 or newer must already be installed and available as
 `snipexpand`.
 
+Automatic expansion needs keyboard read access as well as a running service.
+Use the [SnipExpand setup instructions](https://github.com/silouanwright/snipexpand#set-up)
+and run `snipexpand doctor` if typed triggers do not expand. Selecting a snippet
+in the panel can still paste successfully when keyboard access is missing.
+Restart service reports success or failure in Diagnostics and refreshes the
+checks after restarting.
+
 ## Development
 
 Dependencies are vendored reproducibly with [QMLPack](https://github.com/silouanwright/qmlpack):
