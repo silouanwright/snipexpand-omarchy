@@ -18,6 +18,12 @@ Item {
   property int fileCount: 0
   property var snippets: []
   property var packs: []
+  property var groups: []
+  property string groupError: ""
+  readonly property bool groupsLoading: groupListProcess.running
+  readonly property bool groupsSupported: compatible && Model.versionAtLeast(installedVersion, "0.5.0")
+  property string _groupOutput: ""
+  property string _groupStderr: ""
   property var doctorChecks: []
   property bool doctorOk: false
   property string query: ""
@@ -66,6 +72,8 @@ Item {
     query = ""
     snippets = []
     packs = []
+    groups = []
+    groupError = ""
   }
 
   function diagnose() {
@@ -109,6 +117,19 @@ Item {
     if (!available || packListProcess.running) return
     _packOutput = ""
     packListProcess.running = true
+  }
+
+  function refreshGroups() {
+    if (!groupsSupported || groupListProcess.running || busy) return
+    _groupOutput = ""
+    _groupStderr = ""
+    groupError = ""
+    groupListProcess.running = true
+  }
+
+  function setGroupEnabled(name, enabled) {
+    if (!groupsSupported || groupsLoading) return
+    runAction(["snipexpand", "group", enabled ? "enable" : "disable", String(name)], "group")
   }
 
   function installPack(source) {
@@ -246,6 +267,18 @@ Item {
   }
 
   Process {
+    id: groupListProcess
+    command: ["snipexpand", "group", "list", "--json"]
+    stdout: StdioCollector { waitForEnd: true; onStreamFinished: root._groupOutput = text }
+    stderr: StdioCollector { waitForEnd: true; onStreamFinished: root._groupStderr = String(text || "").trim() }
+    onExited: function(exitCode) {
+      var result = Model.parseGroups(root._groupOutput)
+      root.groups = exitCode === 0 ? result.groups : []
+      root.groupError = exitCode === 0 ? result.error : (root._groupStderr || qsTr("Could not load snippet groups"))
+    }
+  }
+
+  Process {
     id: actionProcess
     onExited: function(exitCode) {
       if (exitCode === 0) {
@@ -255,6 +288,10 @@ Item {
           restartRefreshTimer.restart()
         }
         else if (root.actionKind === "toggle") root.refreshStatus()
+        else if (root.actionKind === "group") {
+          Qt.callLater(root.refreshGroups)
+          Qt.callLater(root.refresh)
+        }
         else if (root.actionKind === "pack") {
           root.refreshPacks()
           Qt.callLater(root.refresh)
@@ -262,6 +299,7 @@ Item {
         else Qt.callLater(root.refresh)
       } else {
         root.errorText = root.actionError || qsTr("SnipExpand command failed")
+        if (root.actionKind === "group") Qt.callLater(root.refreshGroups)
       }
     }
     stdout: StdioCollector { waitForEnd: true }

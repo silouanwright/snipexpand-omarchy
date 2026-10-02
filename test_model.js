@@ -1,3 +1,5 @@
+const assert = require("node:assert/strict")
+console.assert = assert
 const fs = require("fs")
 const vm = require("vm")
 
@@ -29,3 +31,10 @@ console.assert(model.filterSnippets(snippets, "closing")[0].trigger === ";sig")
 console.assert(model.preview("first\nsecond", 20) === "first second")
 console.assert(model.parsePacks('[{"name":"arrows","enabled":true}]').packs[0].name === "arrows")
 console.log("Model checks passed")
+
+assert.equal(model.parseGroups('[{"name":"work","enabled":false,"members":3,"available":0}]').groups[0].enabled, false)
+for (const input of ['null', '{}', 'bad', '[{"name":"work","enabled":"false"}]']) {
+  assert(model.parseGroups(input).error)
+}
+assert.equal(model.filterSnippets([{trigger:";on"},{trigger:";off",available:false}], "").length, 1)
+assert.equal(model.filterSnippets([{trigger:";off",available:false}], "off").length, 0)

@@ -19,6 +19,7 @@ Panel {
   readonly property var visibleSnippets: controller.filteredSnippets
   readonly property bool editing: view === "edit"
   readonly property bool diagnosing: view === "doctor"
+  readonly property bool managingGroups: view === "groups"
   readonly property bool managingPacks: view === "packs"
 
   function showList() {
@@ -66,6 +67,13 @@ Panel {
     view = "packs"
     controller.refreshPacks()
     Qt.callLater(function() { packSourceField.forceActiveFocus() })
+  }
+
+  function showGroups() {
+    view = "groups"
+    controller.errorText = ""
+    controller.refreshGroups()
+    Qt.callLater(function() { groupsView.focusFirst() })
   }
 
   function saveEditor() {
@@ -163,7 +171,7 @@ Panel {
     owner: root
     bar: root.bar
     open: root.opened
-    focusTarget: root.editing ? replacementField : searchField
+    focusTarget: root.managingGroups ? groupsView : (root.editing ? replacementField : searchField)
     contentWidth: panel.fittedContentWidth(Style.space(380))
     contentHeight: panel.fittedContentHeight(content.implicitHeight)
 
@@ -179,7 +187,7 @@ Panel {
           return
         }
         if (event.key === Qt.Key_Escape) {
-          if (root.editing || root.diagnosing || root.managingPacks) root.showList()
+          if (root.editing || root.diagnosing || root.managingPacks || root.managingGroups) root.showList()
           else root.close()
           event.accepted = true
         }
@@ -292,7 +300,8 @@ Panel {
             }
           }
 
-          Row {
+          Flow {
+            width: parent.width
             spacing: Style.space(6)
 
             Button {
@@ -312,6 +321,14 @@ Panel {
               foreground: root.foreground
               fontFamily: root.fontFamily
               onClicked: root.showDoctor()
+            }
+            Button {
+              text: qsTr("Groups")
+              bordered: true
+              focusable: true
+              foreground: root.foreground
+              fontFamily: root.fontFamily
+              onClicked: root.showGroups()
             }
             Button {
               text: qsTr("Packs")
@@ -413,6 +430,24 @@ Panel {
             font.pixelSize: Style.font.caption
             horizontalAlignment: Text.AlignHCenter
           }
+        }
+
+        GroupsView {
+          id: groupsView
+          visible: controller.compatible && root.managingGroups
+          width: parent.width
+          groups: controller.groups
+          supported: controller.groupsSupported
+          loading: controller.groupsLoading
+          busy: controller.busy
+          errorText: controller.groupError || controller.errorText
+          paused: !controller.expansionEnabled
+          foreground: root.foreground
+          fontFamily: root.fontFamily
+          onSetEnabled: function(name, enabled) { controller.setGroupEnabled(name, enabled) }
+          onRefreshRequested: controller.refreshGroups()
+          onOpenConfigRequested: controller.openConfig()
+          onBackRequested: root.showList()
         }
 
         Column {

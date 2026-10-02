@@ -63,6 +63,7 @@ function parseDoctor(raw) {
 
 function filterSnippets(snippets, query) {
   var needle = String(query || "").trim().toLowerCase()
+  snippets = snippets.filter(function(snippet) { return snippet.available !== false })
   if (!needle) return snippets.slice()
   return snippets.filter(function(snippet) {
     return String(snippet.label || "").toLowerCase().indexOf(needle) !== -1
@@ -77,4 +78,16 @@ function filterSnippets(snippets, query) {
 function preview(text, limit) {
   var value = String(text || "").replace(/\s+/g, " ").trim()
   return value.length > limit ? value.substring(0, limit - 1) + "…" : value
+}
+
+function parseGroups(raw) {
+  var result = parseJson(raw, [], "snippet groups")
+  if (result.error || !(result.value instanceof Array)
+      || !result.value.every(function(group) {
+        return group && typeof group.name === "string" && /^[A-Za-z0-9_-]+$/.test(group.name)
+          && typeof group.enabled === "boolean"
+          && Number.isInteger(group.members) && group.members >= 0
+          && Number.isInteger(group.available) && group.available >= 0
+      })) return { groups: [], error: result.error || qsTr("Could not read snippet groups") }
+  return { groups: result.value, error: "" }
 }

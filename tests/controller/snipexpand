@@ -1,0 +1,14 @@
+#!/usr/bin/python3
+import sys,json,pathlib
+state=pathlib.Path(__file__).parent/'state.json'
+enabled=json.loads(state.read_text()) if state.exists() else True
+a=sys.argv[1:]
+if a==['--version']: print('snipexpand 0.5.0')
+elif a==['status','--json']: print(json.dumps(dict(running=True,enabled=True,version='0.5.0',config_valid=True)))
+elif a==['list','--json']: print('[]')
+elif a[:1]==['group']:
+ if len(a)>2 and a[2]=='missing': print('unknown snippet group',file=sys.stderr); sys.exit(1)
+ if a[1]=='disable': enabled=False; state.write_text('false')
+ if a[1]=='enable': enabled=True; state.write_text('true')
+ print(json.dumps([dict(name='work',enabled=enabled,members=2,available=2 if enabled else 0)]))
+else: sys.exit(1)
